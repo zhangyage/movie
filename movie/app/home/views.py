@@ -43,4 +43,8 @@ def moviecol():
 def loginlog():
     return render_template("home/loginlog.html")
 
+@home.route("/animation/")
+def animation():
+    return render_template("home/animation.html")
+
 
