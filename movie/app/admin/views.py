@@ -5,6 +5,7 @@
 '''
 from . import  admin
 from flask import render_template,url_for,redirect
+from app.admin.forms import LoginForm
 
 @admin.route("/")
 def index():
@@ -16,7 +17,10 @@ def logout():
 
 @admin.route("/login/")
 def login():
-    return render_template("admin/login.html")
+    form = LoginForm()
+    if form.validate_on_submit():
+        data = form.data
+    return render_template("admin/login.html",form=form)
 
 @admin.route("/pwd/")
 def pwd():
@@ -101,8 +105,3 @@ def admin_list():
 
 
 
-
-#404页面捕获使用
-@admin.errorhandler(404)
-def not_found(e):
-    return render_template('404.html')
