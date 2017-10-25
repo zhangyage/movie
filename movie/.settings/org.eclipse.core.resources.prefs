@@ -1,11 +1,11 @@
 eclipse.preferences.version=1
-encoding//app/__init__.py=utf-8
+encoding//app/__init__.py=utf8
 encoding//app/admin/__init__.py=utf-8
 encoding//app/admin/forms.py=utf-8
 encoding//app/admin/views.py=utf-8
 encoding//app/home/__init__.py=utf-8
 encoding//app/home/forms.py=utf-8
 encoding//app/home/views.py=utf-8
-encoding//app/module.py=utf-8
+encoding//app/models.py=utf-8
 encoding/manager.py=utf-8
 encoding/test.py=utf-8
