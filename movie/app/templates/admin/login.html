@@ -18,20 +18,26 @@
         <a href=""><b>微电影管理系统</b></a>
     </div>
     <div class="login-box-body">
-        <p class="login-box-msg"></p>
+    	{% for msg  in get_flashed_messages() %}
+        <p class="login-box-msg" style="color:red">{{ msg.decode('UTF-8').encode('GBK') }}</p>
+        {% endfor %}
         <form  method="POST" id="form-data">
-            <div class="form-group has-feedback">
-               {{ form.account }}
+			<div class="form-group has-feedback">
+                {{ form.account }}
                 <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
                 {% for err in form.account.errors %}
-                <div class="col-md-12" ></div>
+                <div class="col-md-12">
+                    <font style="color:red">{{ err.decode('UTF-8').encode('GBK') }}</font>
+                </div>
                 {% endfor %}
             </div>
             <div class="form-group has-feedback">
                 {{ form.pwd }}
                 <span class="glyphicon glyphicon-lock form-control-feedback"></span>
                 {% for err in form.pwd.errors %}
-                <div class="col-md-12" ></div>
+                <div class="col-md-12">
+                    <font style="color:red">{{ err.decode('UTF-8').encode('GBK') }}</font>
+                </div>
                 {% endfor %}
             </div>
             <div class="row">
