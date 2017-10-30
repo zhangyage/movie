@@ -146,6 +146,26 @@ class MovieForm(FlaskForm):
                       )
     
         
-    
+#电影预告列表
+class PreviewForm(FlaskForm):  
+    '''电影预告表单'''
+    title = StringField(label=u"预告标题",
+                          validators=[DataRequired(u'请输入预告标题')],  #设置为必填项目
+                          description=u"预告标题",
+                          render_kw={"class":"form-control", 
+                                     "id":"input_title", 
+                                     "placeholder":u"请输入预告标题！",
+                              }
+                          )
+    logo = FileField(label=u"预告封面",
+                  validators=[DataRequired(u'请上传预告封面')],  #设置为必填项目
+                  description=u"预告封面",
+                  render_kw={"id":"input_logo",
+                          }
+                  )
+    submit = SubmitField(label=u"编辑",
+                 render_kw={"class":"btn btn-primary",
+                      }
+                  )    
     
     
