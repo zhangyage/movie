@@ -357,7 +357,7 @@ def comment_list(page=None):
            Movie.id == Comment.movie_id,
            User.id == Comment.user_id 
         ).order_by(
-        User.addtime.asc()
+        Comment.addtime.asc()
     ).paginate(page=page, per_page=10)   #paginate分页 (page页码,per_page条目数)
     return render_template("admin/comment_list.html",page_data=page_data)
 
@@ -372,10 +372,34 @@ def comment_del(id=None):
     flash("评论删除成功", "OK")
     return redirect(url_for('admin.comment_list',page=1))
 
-@admin.route("/moviecol/list/")
+#电影收藏列表
+@admin.route("/moviecol/list/<int:page>",methods=["GET"])
 @check_login
-def moviecol_list():
-    return render_template("admin/moviecol_list.html")
+def moviecol_list(page=None):
+    if page is None:
+        page = 1
+    page_data = Moviecol.query.join(
+            Movie
+        ).join(
+            User
+        ).filter(
+           Movie.id == Moviecol.movie_id,
+           User.id == Moviecol.user_id 
+        ).order_by(
+       Moviecol.addtime.asc()
+    ).paginate(page=page, per_page=10)   #paginate分页 (page页码,per_page条目数)
+    return render_template("admin/moviecol_list.html",page_data=page_data)
+
+
+#删除电影收藏
+@admin.route("/moviecol/del/<int:id>/",methods=["GET"])
+@check_login
+def moviecol_del(id=None):
+    moviecol=Moviecol.query.filter_by(id=id).first_or_404()   #如果没有返回404
+    db.session.delete(moviecol)
+    db.session.commit()
+    flash("收藏电影删除成功", "OK")
+    return redirect(url_for('admin.moviecol_list',page=1))
 
 @admin.route("/oplog/list/")
 @check_login
