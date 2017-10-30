@@ -1,0 +1,12 @@
+INSERT INTO `user` VALUES (1, '狗', '1234', '1234@qq.com', '12345678945', '狗', '11.png', '2017-10-30 14:46:18', 'adhagdasd5645d4f5wef4fvds5f465f4s65f4s');
+INSERT INTO `user` VALUES (2, '鼠', '1235', '1235@qq.com', '12355678945', '鼠', '1.png', '2017-10-30 14:53:41', 'adhagdasd5645d4f5wef4fvdsdf465f4s65f4s');
+INSERT INTO `user` VALUES (3, '牛', '1224', '1224@qq.com', '12242678945', '牛', '2.png', '2017-10-30 14:53:45', '1224gdasd5645d4f5wef4fvds5f465f4s65f4s');
+INSERT INTO `user` VALUES (4, '虎', '1231', '1231@qq.com', '12344678945', '虎', '3.png', '2017-10-30 14:53:46', '1231gdasd5645d4f5wef4fvds5f465f4s65f4s');
+INSERT INTO `user` VALUES (5, '兔', '1232', '1232@qq.com', '12325678945', '兔', '4.png', '2017-10-30 14:53:47', '1232gdasd5645d4f5wef4fvds5f465f4s65f4s');
+INSERT INTO `user` VALUES (6, '龙', '1233', '1233@qq.com', '12335678945', '龙', '5.png', '2017-10-30 14:53:48', '1233gdasd5645d4f5wef4fvds5f465f4s65f4s');
+INSERT INTO `user` VALUES (10, '蛇', '1244', '1244@qq.com', '12355648945', '蛇', '6.png', '2017-10-30 14:55:06', '1234gdasd5645d4f5wef4fvds5f465f4s65f4s');
+INSERT INTO `user` VALUES (12, '马', '1236', '1236@qq.com', '12349678945', '马', '7.png', '2017-10-30 14:55:21', '1236gdasd5645d4f5wef4fvds5f465f4s65f4s');
+INSERT INTO `user` VALUES (13, '羊', '1237', '1237@qq.com', '12375678945', '羊', '8.png', '2017-10-30 14:55:22', '1237gdasd5645d4f5wef4fvds5f465f4s65f4s');
+INSERT INTO `user` VALUES (14, '猴', '1238', '1238@qq.com', '12385678945', '猴', '9.png', '2017-10-30 14:55:23', '1238gdasd5645d4f5wef4fvds5f465f4s65f4s');
+INSERT INTO `user` VALUES (15, '鸡', '1239', '1239@qq.com', '12395678945', '鸡', '10.png', '2017-10-30 14:55:24', '1239gdasd5645d4f5wef4fvds5f465f4s65f4s');
+INSERT INTO `user` VALUES (15, '猪', '1240', '1240@qq.com', '12405678945', '猪', '12.png', '2017-10-30 14:55:25', '1240gdasd5645d4f5wef4fvds5f465f4s65f4s');
