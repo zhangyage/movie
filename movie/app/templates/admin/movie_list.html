@@ -56,14 +56,14 @@
                                     <td>{{ v.id }}</td>
                                     <td>{{ v.title }}</td>
                                     <td>{{ v.length }}</td>
-                                    <td>{{ v.tag_id }}</td>
+                                    <td>{{ v.tag.name }}</td>
                                     <td>{{ v.area }}</td>
                                     <td>{{ v.star }}</td>
                                     <td>{{ v.playnum }}</td>
                                     <td>{{ v.commentnum }}</td>
                                     <td>{{ v.release_time}}</td>
                                     <td>
-                                        <a  class="label label-success">编辑</a>
+                                        <a href="{{ url_for('admin.movie_update',id=v.id) }}" class="label label-success">编辑</a>
                                         &nbsp;
                                         <a href="{{ url_for('admin.movie_del',id=v.id) }}" class="label label-danger">删除</a>
                                     </td>
