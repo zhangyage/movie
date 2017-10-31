@@ -23,14 +23,14 @@
 	                          <div class="alert alert-success alert-dismissible">
 				                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
 				                <h4><i class="icon fa fa-check"></i> 电影添加成功！</h4>
-				               		 {{ msg.decode('UTF-8').encode('GBK') }}
+				               		 {{ msg }}
 				              </div>
 				            {% endfor %}
 				            {% for msg  in get_flashed_messages(category_filter=["err"]) %}
 	                          <div class="alert alert-danger alert-dismissible">
 				                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
 				                <h4><i class="icon fa fa-ban"></i> 添加失败!影片已经存在</h4>
-				                	{{ msg.decode('UTF-8').encode('GBK') }}
+				                	{{ msg }}
 				              </div>
 				            {% endfor %}
                                 <div class="form-group">
