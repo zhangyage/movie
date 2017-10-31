@@ -19,7 +19,7 @@
     </div>
     <div class="login-box-body">
     	{% for msg  in get_flashed_messages() %}
-        <p class="login-box-msg" style="color:red">{{ msg.decode('UTF-8').encode('GBK') }}</p>
+        <p class="login-box-msg" style="color:red">{{ msg }}</p>
         {% endfor %}
         <form  method="POST" id="form-data">
 			<div class="form-group has-feedback">
@@ -27,7 +27,7 @@
                 <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
                 {% for err in form.account.errors %}
                 <div class="col-md-12">
-                    <font style="color:red">{{ err.decode('UTF-8').encode('GBK') }}</font>
+                    <font style="color:red">{{ err }}</font>
                 </div>
                 {% endfor %}
             </div>
@@ -36,7 +36,7 @@
                 <span class="glyphicon glyphicon-lock form-control-feedback"></span>
                 {% for err in form.pwd.errors %}
                 <div class="col-md-12">
-                    <font style="color:red">{{ err.decode('UTF-8').encode('GBK') }}</font>
+                    <font style="color:red">{{ err }}</font>
                 </div>
                 {% endfor %}
             </div>
