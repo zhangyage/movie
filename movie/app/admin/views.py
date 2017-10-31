@@ -5,7 +5,7 @@
 '''
 from . import  admin
 from flask import render_template,url_for,redirect,flash,session,request
-from app.admin.forms import LoginForm,TagForm,MovieForm,PreviewForm
+from app.admin.forms import LoginForm,TagForm,MovieForm,PreviewForm,PwdForm,AuthForm,RoleForm
 from app.models import Admin,Tag,User,Adminlog,Auth,Role,Preview,Oplog,Movie,Moviecol,Comment
 from functools import wraps
 from app import db,app
@@ -41,7 +41,6 @@ def index():
 @check_login
 def logout():
     session.pop("admin",None)   #删除登录信息使我们的登录回到最初状态
-    print session
     return redirect( url_for("admin.login"))
 
 #登录
@@ -53,17 +52,27 @@ def login():
         #print data
         admin = Admin.query.filter_by(name=data["account"]).first()
         if not admin.check_pwd(data["pwd"]):
-            flash(u"密码错误！")   #消息闪现
+            flash(u"密码错误！","err")   #消息闪现
             return redirect(url_for("admin.login"))
         session["admin"] = data["account"]   #保存登录信息
         return redirect(request.args.get("next") or url_for("admin.index"))
     return render_template("admin/login.html",form=form)
 
 #修改密码
-@admin.route("/pwd/")
+@admin.route("/pwd/",methods=["GET","POST"])
 @check_login
 def pwd():
-    return render_template("admin/pwd.html")
+    form = PwdForm()
+    if form.validate_on_submit():
+        data = form.data
+        admin = Admin.query.filter_by(name=session["admin"]).first()
+        from werkzeug.security import generate_password_hash    #导入加密模块
+        admin.pwd = generate_password_hash(data["new_pwd"])
+        db.session.add(admin)
+        db.session.commit()
+        flash(u"密码修改成功,请重新登录", "OK")
+        redirect(url_for('admin.logout'))
+    return render_template("admin/pwd.html",form=form)
 
 #添加标签
 @admin.route("/tag/add/",methods=["GET","POST"])
@@ -110,7 +119,7 @@ def tag_del(id=None):
     return redirect(url_for('admin.tag_list',page=1))
 
 
-#更新标签
+#修改标签
 @admin.route("/tag/update/<int:id>/",methods=["GET","POST"])
 @check_login
 def tag_update(id):
@@ -172,14 +181,14 @@ def movie_add():
 
 
 #电影列表
-@admin.route("/movie/list/<int:page>",methods=["GET"])
+@admin.route("/movie/list/<int:page>/",methods=["GET"])
 @check_login
 def movie_list(page = None):
     if page is None:
         page = 1
     page_data = Movie.query.join(Tag).filter(Tag.id == Movie.tag_id).order_by(
         Movie.addtime.asc()
-    ).paginate(page=page, per_page=1)   #paginate分页 (page页码,per_page条目数)
+    ).paginate(page=page, per_page=10)   #paginate分页 (page页码,per_page条目数)
     return render_template("admin/movie_list.html",page_data=page_data)
 
 
@@ -286,7 +295,7 @@ def preview_del(id=None):
     return redirect(url_for('admin.preview_list',page=1))
 
 
-#修改预告电影
+#修改预告
 @admin.route("/preview/update/<int:id>/",methods=["GET","POST"])
 @check_login
 def preview_update(id):
@@ -416,25 +425,132 @@ def adminloginlog_list():
 def userloginlog_list():
     return render_template("admin/userloginlog_list.html")
 
-@admin.route("/auth/add/")
+
+#权限添加
+@admin.route("/auth/add/",methods=["GET","POST"])
 @check_login
 def auth_add():
-    return render_template("admin/auth_add.html")
+    form = AuthForm()
+    if form.validate_on_submit():
+        data = form.data
+        auth = Auth(
+            name = data["name"],
+            url = data["url"]
+        )
+        db.session.add(auth)
+        db.session.commit()
+        flash(u"添加权限成功", "OK")
+    return render_template("admin/auth_add.html",form=form)
 
-@admin.route("/auth/list/")
+
+#权限列表
+@admin.route("/auth/list/<int:page>/",methods=["GET"])
 @check_login
-def auth_list():
-    return render_template("admin/auth_list.html")
+def auth_list(page=None):
+    if page is None:
+        page = 1
+    page_data = Auth.query.order_by(
+        Auth.addtime.asc()
+    ).paginate(page=page, per_page=10)   #paginate分页 (page页码,per_page条目数)
+    return render_template("admin/auth_list.html",page_data=page_data)
 
-@admin.route("/role/add/")
+
+#删除权限
+@admin.route("/auth/del/<int:id>/",methods=["GET"])
+@check_login
+def auth_del(id=None):
+    auth=Auth.query.filter_by(id=id).first_or_404()   #如果没有返回404
+    db.session.delete(auth)
+    db.session.commit()
+    flash(u"删除标签成功", "OK")
+    return redirect(url_for('admin.auth_list',page=1))
+
+
+#修改权限
+@admin.route("/auth/update/<int:id>/",methods=["GET","POST"])
+@check_login
+def auth_update(id=None):
+    form = AuthForm()
+    auth = Auth.query.get_or_404(id)
+    if form.validate_on_submit():
+        data = form.data
+        auth_count = Auth.query.filter_by(name=data["name"]).count() #不可以有重复标签
+        if auth.name != data["name"] and auth_count == 1:
+            flash(u"权限名称已经存在！",'err')
+            return redirect(url_for('admin.auth_update',id=id))
+        auth.name = data["name"]       #修改数据
+        auth.url = data["url"]
+        db.session.add(auth)   #添加修改数据
+        db.session.commit()   #提交数据
+        flash(u"修改权限成功！", "OK")
+        redirect(url_for('admin.auth_update',id=id))
+    return render_template("admin/auth_update.html",form=form,auth=auth)
+
+
+#角色添加
+@admin.route("/role/add/",methods=["GET","POST"])
 @check_login
 def role_add():
-    return render_template("admin/role_add.html")
+    form = RoleForm()
+    if form.validate_on_submit():
+        data = form.data
+        role = Role(
+            name=data["name"],
+            auths=",".join(map(lambda v: str(v),data["auths"]))
+        )
+        db.session.add(role)
+        db.session.commit()
+        flash(u"角色添加成功！", "OK")
+        return redirect(url_for("admin.role_add"))
+    return render_template("admin/role_add.html",form=form)
 
-@admin.route("/role/list/")
+
+#角色列表
+@admin.route("/role/list/<int:page>",methods=["GET"])
 @check_login
-def role_list():
-    return render_template("admin/role_list.html")
+def role_list(page=None):
+    if page is None:
+        page = 1
+    page_data = Role.query.order_by(
+        Role.addtime.asc()
+    ).paginate(page=page, per_page=10)   #paginate分页 (page页码,per_page条目数)
+    return render_template("admin/role_list.html",page_data=page_data)
+
+
+#删除角色
+@admin.route("/role/del/<int:id>/",methods=["GET"])
+@check_login
+def role_del(id=None):
+    role=Role.query.filter_by(id=id).first_or_404()   #如果没有返回404
+    db.session.delete(role)
+    db.session.commit()
+    flash(u"删除成功", "OK")
+    return redirect(url_for('admin.role_list',page=1))
+
+
+#修改角色
+@admin.route("/role/update/<int:id>/",methods=["GET","POST"])
+@check_login
+def role_update(id=None):
+    form = RoleForm()
+    role = Role.query.get_or_404(id)
+    if request.method == "GET":
+        auths = role.auths
+        form.auths.data = list(map(lambda v:int(v),auths.split(",")))
+    if form.validate_on_submit():
+        data = form.data
+        role_count = Role.query.filter_by(name=data["name"]).count() #不可以有重复标签
+        if role.name != data["name"] and role_count == 1:
+            flash(u"权限名称已经存在！",'err')
+            return redirect(url_for('admin.role_update',id=id))
+        role.name = data["name"]       #修改数据
+        auths=",".join(map(lambda v: str(v),data["auths"]))
+        db.session.add(role)   #添加修改数据
+        db.session.commit()   #提交数据
+        flash(u"修改角色成功！", "OK")
+        redirect(url_for('admin.role_update',id=id))
+    return render_template("admin/role_update.html",form=form,role=role)
+
 
 @admin.route("/admin/add/")
 @check_login
