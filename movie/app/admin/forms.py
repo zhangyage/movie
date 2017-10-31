@@ -4,18 +4,19 @@
     @表单处理
 '''
 from flask_wtf import FlaskForm
-from wtforms import TextField,PasswordField,validators,StringField,SubmitField,FileField,TextAreaField,SelectField
+from wtforms import TextField,PasswordField,validators,StringField,SubmitField,FileField,TextAreaField,SelectField,SelectMultipleField
 from wtforms.validators import DataRequired,ValidationError
-from app.models import Admin,Tag
-from random import choice
+from flask_wtf.file import file_allowed
+from app.models import Admin,Tag,Auth
 
 tags = Tag.query.all()   #获取所有的标签
+auth_list = Auth.query.all()   #获取所有的权限
 
 #用户登录验证
 class LoginForm(FlaskForm):
     '''管理员登陆表单'''
     account = StringField(label=u"账号",
-                          validators=[DataRequired('请输入账号')],  #设置为必填项目
+                          validators=[DataRequired(u'请输入账号')],  #设置为必填项目
                           description=u"账号",
                           render_kw={"class":"form-control",
                                      "placeholder":u"请输入账号！",
@@ -23,7 +24,7 @@ class LoginForm(FlaskForm):
                               }
                           )
     pwd = PasswordField(label=u"密码",
-                          validators=[DataRequired('请输入密码')],  
+                          validators=[DataRequired(u'请输入密码')],  
                           description=u"密码",
                           render_kw={"class":"form-control",
                                      "placeholder":u"请输入密码！",
@@ -40,7 +41,7 @@ class LoginForm(FlaskForm):
         account = field.data
         admin = Admin.query.filter_by(name=account).count()
         if admin == 0:
-            raise ValidationError("账号不存在")
+            raise ValidationError(u"账号不存在")
         
 #标签添加表单
 class TagForm(FlaskForm):
@@ -75,7 +76,7 @@ class MovieForm(FlaskForm):
                               }
                           )
     url = FileField(label=u"文件",
-                      validators=[DataRequired(u'请上传文件')],  #设置为必填项目
+                      validators=[DataRequired(u'请上传文件'),file_allowed(['jpg', 'png'], u'Images only!')],  #设置为必填项目
                       description=u"电影文件",
                       render_kw={"id":"input_url", 
                               }
@@ -158,7 +159,7 @@ class PreviewForm(FlaskForm):
                               }
                           )
     logo = FileField(label=u"预告封面",
-                  validators=[DataRequired(u'请上传预告封面')],  #设置为必填项目
+                  validators=[DataRequired(u'请上传预告封面'),file_allowed(['jpg', 'png'], u'Images only!')],  #设置为必填项目
                   description=u"预告封面",
                   render_kw={"id":"input_logo",
                           }
@@ -168,4 +169,83 @@ class PreviewForm(FlaskForm):
                       }
                   )    
     
+   
+#修改密码
+class PwdForm(FlaskForm):  
+    '''密码修改表单'''   
+    old_pwd = PasswordField(label=u"旧密码",
+                  validators=[DataRequired(u'请输入旧密码')],  #设置为必填项目
+                  description=u"旧密码",
+                  render_kw={"class":"form-control", 
+                             "id":"input_pwd",
+                             "placeholder":u"请输入旧密码！",
+                          }
+                )
+    new_pwd = PasswordField(label=u"新密码",
+                  validators=[DataRequired(u'请输入新密码')],  #设置为必填项目
+                  description=u"新密码",
+                  render_kw={"class":"form-control", 
+                             "id":"input_newpwd",
+                             "placeholder":u"请输入新密码！",
+                          }
+                )
+    submit = SubmitField(label=u"修改",
+                 render_kw={"class":"btn btn-primary",
+                      }
+                  ) 
     
+    def validate_old_pwd(self,field):
+        from flask import  session
+        pwd = field.data
+        name = session["admin"]
+        admin = Admin.query.filter_by(name=name).first()
+        if not admin.check_pwd(pwd):
+            raise ValidationError(u"旧密码错误！")
+            
+
+#权限添加表单
+class AuthForm(FlaskForm):
+    '''电影添加表单'''
+    name = StringField(label=u"权限名称",
+                          validators=[DataRequired(u'请输入权限名称')],  #设置为必填项目
+                          description=u"权限名称",
+                          render_kw={"class":"form-control", 
+                                     "id":"input_name", 
+                                     "placeholder":u"请输入权限名称！"
+                              }
+                          )
+    url = StringField(label=u"权限地址",
+                          validators=[DataRequired(u'请输入权限地址')],  #设置为必填项目
+                          description=u"电影标签",
+                          render_kw={"class":"form-control", 
+                                     "id":"input_url", 
+                                     "placeholder":u"请输入权限地址！"
+                              }
+                          )
+    
+    submit = SubmitField(label=u"编辑",
+                         render_kw={"class":"btn btn-primary",
+                              }
+                          )           
+
+#角色添加表单
+class RoleForm(FlaskForm):
+    '''电影添加表单'''
+    name = StringField(label=u"角色名称",
+                          validators=[DataRequired(u'请输入角色名称')],  #设置为必填项目
+                          description=u"角色名称",
+                          render_kw={"class":"form-control", 
+                                     "placeholder":u"请输入角色名称！"
+                              }
+                          )
+    auths = SelectMultipleField(label=u"权限列表",
+                                validators=[DataRequired(u'请选择权限列表')],
+                                coerce = int,
+                                choices = [(v.id,v.name) for v in auth_list],  #列表生成器生成选择
+                                render_kw={"class":"form-control", 
+                                     "placeholder":u'请选择权限列表'
+                              })
+    submit = SubmitField(label=u"编辑",
+                     render_kw={"class":"btn btn-primary",
+                          }
+                      )  
