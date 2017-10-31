@@ -53,7 +53,7 @@ def login():
         #print data
         admin = Admin.query.filter_by(name=data["account"]).first()
         if not admin.check_pwd(data["pwd"]):
-            flash("密码错误！")   #消息闪现
+            flash(u"密码错误！")   #消息闪现
             return redirect(url_for("admin.login"))
         session["admin"] = data["account"]   #保存登录信息
         return redirect(request.args.get("next") or url_for("admin.index"))
@@ -74,14 +74,14 @@ def tag_add():
         data = form.data
         tag = Tag.query.filter_by(name=data["name"]).count() #不可以有重复标签
         if tag == 1:
-            flash("标签已存在！",'err')
+            flash(u"标签已存在！",'err')
             return redirect(url_for('admin.tag_add'))
         tag = Tag(
             name=data["name"]
         )
         db.session.add(tag)   #添加数据
         db.session.commit()   #提交数据
-        flash("添加标签成功！", "OK")
+        flash(u"添加标签成功！", "OK")
         redirect(url_for('admin.tag_add'))
     return render_template("admin/tag_add.html",form=form)
 
@@ -106,7 +106,7 @@ def tag_del(id=None):
     tag=Tag.query.filter_by(id=id).first_or_404()   #如果没有返回404
     db.session.delete(tag)
     db.session.commit()
-    flash("删除标签成功", "OK")
+    flash(u"删除标签成功", "OK")
     return redirect(url_for('admin.tag_list',page=1))
 
 
@@ -120,12 +120,12 @@ def tag_update(id):
         data = form.data
         tag_count = Tag.query.filter_by(name=data["name"]).count() #不可以有重复标签
         if tag.name != data["name"] and tag_count == 1:
-            flash("标签已经存在！",'err')
+            flash(u"标签已经存在！",'err')
             return redirect(url_for('admin.tag_update',id=id))
         tag.name = data["name"]       #修改数据
         db.session.add(tag)   #添加修改数据
         db.session.commit()   #提交数据
-        flash("修改标签成功！", "OK")
+        flash(u"修改标签成功！", "OK")
         redirect(url_for('admin.tag_update',id=id))
     return render_template("admin/tag_update.html",form=form,tag=tag)
     
@@ -139,7 +139,7 @@ def movie_add():
         data = form.data
         movie_count = Movie.query.filter_by(title=data["title"]).count() #不可以有重复标签
         if movie_count == 1:
-            flash("对应的影片已存在！",'err')
+            flash(u"对应的影片已存在！",'err')
             return redirect(url_for('admin.preview_add'))
         file_url = secure_filename(form.url.data.filename)
         file_logo = secure_filename(form.logo.data.filename)
@@ -166,7 +166,7 @@ def movie_add():
             )
         db.session.add(movie)
         db.session.commit()
-        flash("添加电影成功",'OK')
+        flash(u"添加电影成功",'OK')
         return redirect(url_for('admin.movie_add'))
     return render_template("admin/movie_add.html",form=form)
 
@@ -190,7 +190,7 @@ def movie_del(id=None):
     movie=Movie.query.filter_by(id=id).first_or_404()   #如果没有返回404
     db.session.delete(movie)
     db.session.commit()
-    flash("删除标签成功", "OK")
+    flash(u"删除标签成功", "OK")
     return redirect(url_for('admin.movie_list',page=1))
 
 
@@ -210,7 +210,7 @@ def movie_update(id):
         data = form.data
         movie_count = Movie.query.filter_by(title=data["title"]).count()
         if movie_count == 1 and movie.title != data["title"]:
-            flash("修改失败",'err')
+            flash(u"修改失败",'err')
             return redirect(url_for('admin.movie_update',id=id))
         
         if form.url.data.filename != "":   #判断我们是否更改图片了  空就是没有更改
@@ -231,7 +231,7 @@ def movie_update(id):
         movie.length = data["length"]
         db.session.add(movie)
         db.session.commit()
-        flash("修改电影成功",'OK')
+        flash(u"修改电影成功",'OK')
         return redirect(url_for('admin.movie_update',id=id))
     return render_template("admin/movie_update.html",form=form,movie=movie)  #movie=movie传进初始值，方便我们参考修改
 
@@ -245,7 +245,7 @@ def preview_add():
         data = form.data
         preview_count = Preview.query.filter_by(title=data["title"]).count() #不可以有重复标签
         if preview_count == 1:
-            flash("对应的预告已存在！",'err')
+            flash(u"对应的预告已存在！",'err')
             return redirect(url_for('admin.preview_add'))
         file_logo = secure_filename(form.logo.data.filename)
         '''form.logo.data.filename  获取上传文件文件名'''
@@ -260,7 +260,7 @@ def preview_add():
             )
         db.session.add(preview)
         db.session.commit()
-        flash("预告电影添加成功",'OK')
+        flash(u"预告电影添加成功",'OK')
         return redirect(url_for('admin.preview_add'))
     return render_template("admin/preview_add.html",form = form)
 
@@ -282,7 +282,7 @@ def preview_del(id=None):
     preview=Preview.query.filter_by(id=id).first_or_404()   #如果没有返回404
     db.session.delete(preview)
     db.session.commit()
-    flash("删除预告成功", "OK")
+    flash(u"删除预告成功", "OK")
     return redirect(url_for('admin.preview_list',page=1))
 
 
@@ -297,7 +297,7 @@ def preview_update(id):
         data = form.data
         preview_count = Preview.query.filter_by(title=data["title"]).count()
         if preview_count == 1 and preview.title != data["title"]:
-            flash("修改失败！对应的预告片已经存在",'err')
+            flash(u"修改失败！对应的预告片已经存在",'err')
             return redirect(url_for('admin.preview_update',id=id))
         if form.logo.data.filename != "": #判断我们是否更改图片了  空就是没有更改
             file_logo = secure_filename(form.logo.data.filename)
@@ -307,7 +307,7 @@ def preview_update(id):
         preview.title = data["title"]
         db.session.add(preview)
         db.session.commit()
-        flash("预告电影修改成功",'OK')
+        flash(u"预告电影修改成功",'OK')
         return redirect(url_for('admin.preview_update',id=id))
     return render_template("admin/preview_update.html",form=form,preview=preview)  #movie=movie传进初始值，方便我们参考修改
 
@@ -339,7 +339,7 @@ def user_del(id=None):
     user=User.query.filter_by(id=id).first_or_404()   #如果没有返回404
     db.session.delete(user)
     db.session.commit()
-    flash("删除预告成功", "OK")
+    flash(u"删除预告成功", "OK")
     return redirect(url_for('admin.user_list',page=1))
 
 
@@ -369,7 +369,7 @@ def comment_del(id=None):
     comment=Comment.query.filter_by(id=id).first_or_404()   #如果没有返回404
     db.session.delete(comment)
     db.session.commit()
-    flash("评论删除成功", "OK")
+    flash(u"评论删除成功", "OK")
     return redirect(url_for('admin.comment_list',page=1))
 
 #电影收藏列表
@@ -398,7 +398,7 @@ def moviecol_del(id=None):
     moviecol=Moviecol.query.filter_by(id=id).first_or_404()   #如果没有返回404
     db.session.delete(moviecol)
     db.session.commit()
-    flash("收藏电影删除成功", "OK")
+    flash(u"收藏电影删除成功", "OK")
     return redirect(url_for('admin.moviecol_list',page=1))
 
 @admin.route("/oplog/list/")
