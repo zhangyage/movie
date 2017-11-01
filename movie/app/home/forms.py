@@ -6,6 +6,7 @@
 from flask_wtf import FlaskForm
 from wtforms import TextField,PasswordField,validators,StringField,SubmitField,FileField,TextAreaField,SelectField,SelectMultipleField
 from wtforms.validators import DataRequired,ValidationError,EqualTo,Email,Regexp
+from flask_wtf.file import file_allowed
 from app.models import User
 
 class RegistForm(FlaskForm):
@@ -108,3 +109,55 @@ class LoginForm(FlaskForm):
         user = User.query.filter_by(name=name).count()
         if user == 0:
             raise ValidationError(u"账号不存在")
+
+
+class UserForm(FlaskForm):
+    '''会员注册'''
+    name = StringField(label=u"昵称",
+                          validators=[DataRequired(u'请输入昵称')],  #设置为必填项目
+                          description=u"昵称",
+                          render_kw={"class":"form-control input-lg",
+                                     "placeholder":u"请输入昵称！",
+                                     #"required":"required"     #html提示不能为空
+                              }
+                          )
+    email = StringField(label=u"邮箱",
+                      validators=[
+                          DataRequired(u'请输入邮箱'),
+                          Email(u"邮箱格式不正确！")
+                          ],  #设置为必填项目
+                      description=u"邮箱",
+                      render_kw={"class":"form-control input-lg",
+                                 "placeholder":u"请输入邮箱！",
+                                 #"required":"required"     #html提示不能为空
+                          }
+                      )
+    phone = StringField(label=u"手机",
+                  validators=[
+                      DataRequired(u'请输入手机号'),
+                      Regexp("1[3458]\\d{9}",message=u"号码格式不正确")
+                      ],  #设置为必填项目
+                  description=u"手机",
+                  render_kw={"class":"form-control input-lg",
+                             "placeholder":u"请输入手机号！",
+                             #"required":"required"     #html提示不能为空
+                      }
+                  )
+    face = FileField(label=u"头像",
+                  validators=[DataRequired(u'请上传头像'),file_allowed(['jpg', 'png'], u'Images only!')],  #设置为必填项目
+                  description=u"头像",
+                  render_kw={"id":"input_logo",
+                          }
+                  )
+    info = TextAreaField(label=u"电影简介",
+                      validators=[DataRequired(u'请输入电影简介')],  #设置为必填项目
+                      description=u"电影简介",
+                      render_kw={"class":"form-control", 
+                                 "id":"input_info",
+                                 "row":10
+                          }
+                      )
+    submit = SubmitField(label=u"保存修改",
+                         render_kw={"class":"btn btn-lg btn-success btn-block",
+                              }
+                          )

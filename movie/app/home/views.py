@@ -5,8 +5,9 @@
 '''
 from . import  home
 from flask import render_template,redirect,url_for,session,flash,request
-from app.home.forms import RegistForm,LoginForm
+from app.home.forms import RegistForm,LoginForm,UserForm
 from app.models import User,Userlog
+from functools import wraps
 from app import db
 import uuid
 
@@ -72,23 +73,31 @@ def register():
     return render_template("home/register.html",form=form)
 
 #用户中心
-@home.route("/user/")
+@home.route("/user/",methods=["GET","POST"])
+@check_login
 def user():
-    return render_template("home/user.html")
+    form = UserForm()
+    if form.validate_on_submit():
+        data = form.data
+    return render_template("home/user.html",form=form)
 
 @home.route("/pwd/")
+@check_login
 def pwd():
     return render_template("home/pwd.html")
 
 @home.route("/comments/")
+@check_login
 def comments():
     return render_template("home/comments.html")
 
 @home.route("/moviecol/")
+@check_login
 def moviecol():
     return render_template("home/moviecol.html")
 
 @home.route("/loginlog/")
+@check_login
 def loginlog():
     return render_template("home/loginlog.html")
 
