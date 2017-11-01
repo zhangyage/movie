@@ -8,8 +8,11 @@ from flask import render_template,redirect,url_for,session,flash,request
 from app.home.forms import RegistForm,LoginForm,UserForm
 from app.models import User,Userlog
 from functools import wraps
-from app import db
+from werkzeug.utils import secure_filename
+from app import db,app
 import uuid
+import os
+import datetime
 
 
 #装饰器 验证是否登录
@@ -20,6 +23,13 @@ def check_login(f):
             return redirect(url_for("home.login", next=request.url))
         return f(*args,**kwargs)
     return decorated_functions
+
+
+#修改文件名称
+def change_filename(filename):
+    fileinfo = os.path.splitext(filename) #分割文件名后缀和前缀
+    filename = datetime.datetime.now().strftime("%Y%m%d%H%M%S")+str(uuid.uuid4().hex)+fileinfo[-1]
+    return filename
 
 @home.route("/")
 def index():
@@ -77,9 +87,32 @@ def register():
 @check_login
 def user():
     form = UserForm()
+    form.face.validators = []
+    user = User.query.get_or_404(session["user_id"])
+    if request.method == "GET":
+        form.name.data = user.name
+        form.email.data = user.email
+        form.phone.data = user.phone
     if form.validate_on_submit():
         data = form.data
-    return render_template("home/user.html",form=form)
+        user_count = User.query.filter_by(name=data["name"]).count()
+        if user_count == 1 and user.name != data["name"]:
+            flash(u"用户已存在！",'err')
+            return redirect(url_for('home.user'))
+        if form.face.data.filename != "":
+            file_face = secure_filename(form.face.data.filename)
+            user.face = change_filename(file_face)
+            form.face.data.save(app.config["UP_DIR"]+ "users/" + user.face)
+        
+        user.name = data["name"]
+        user.info = data["info"]
+        user.email = data["email"]
+        user.phone = data["phone"]
+        db.session.add(user)
+        db.session.commit()
+        flash(u"用户信息修改成功！",'OK')
+        return redirect(url_for('home.user'))
+    return render_template("home/user.html",form=form,user=user)
 
 @home.route("/pwd/")
 @check_login
