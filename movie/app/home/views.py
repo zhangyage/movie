@@ -37,7 +37,6 @@ def login():
             return redirect(url_for("home.login"))
         session["user"] = data["name"]   #保存登录信息
         session["user_id"] = user.id       #保存登录用户id,后面验证权限使用
-        
         userlog = Userlog(                 #记录用户登录日志
             user_id=user.id,
             ip=request.remote_addr,
