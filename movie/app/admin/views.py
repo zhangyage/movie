@@ -87,12 +87,10 @@ def logout():
 
 #登录
 @admin.route("/login/",methods=["GET","POST"])
-@oplog
 def login():
     form = LoginForm()
     if form.validate_on_submit():
         data = form.data
-        #print data
         admin = Admin.query.filter_by(name=data["account"]).first()
         if not admin.check_pwd(data["pwd"]):
             flash(u"密码错误！","err")   #消息闪现
@@ -408,7 +406,7 @@ def user_list(page=None):
 
 
 #会员查看
-@admin.route("/user/view/<int:id>",methods=["GET"])
+@admin.route("/user/view/<int:id>/",methods=["GET"])
 @check_login
 @admin_auth
 @oplog
@@ -431,7 +429,7 @@ def user_del(id=None):
 
 
 #评论列表
-@admin.route("/comment/list/<int:page>",methods=["GET"])
+@admin.route("/comment/list/<int:page>/",methods=["GET"])
 @check_login
 @admin_auth
 def comment_list(page=None):
@@ -463,7 +461,7 @@ def comment_del(id=None):
     return redirect(url_for('admin.comment_list',page=1))
 
 #电影收藏列表
-@admin.route("/moviecol/list/<int:page>",methods=["GET"])
+@admin.route("/moviecol/list/<int:page>/",methods=["GET"])
 @check_login
 @admin_auth
 def moviecol_list(page=None):
@@ -508,7 +506,8 @@ def oplog_list(page=None):
     ).paginate(page=page, per_page=10)   #paginate分页 (page页码,per_page条目数)
     return render_template("admin/oplog_list.html",page_data=page_data)
 
-@admin.route("/adminloginlog/list/<int:page>",methods=["GET"])
+#管理员登录日志
+@admin.route("/adminloginlog/list/<int:page>/",methods=["GET"])
 @check_login
 def adminloginlog_list(page=None):
     if page is None:
@@ -522,16 +521,25 @@ def adminloginlog_list(page=None):
     ).paginate(page=page, per_page=10)   #paginate分页 (page页码,per_page条目数)
     return render_template("admin/adminloginlog_list.html",page_data=page_data)
 
-@admin.route("/userloginlog/list/")
+#用户登录日志
+@admin.route("/userloginlog/list/<int:page>",methods=["GET"])
 @check_login
-def userloginlog_list():
-    return render_template("admin/userloginlog_list.html")
+def userloginlog_list(page=None):
+    if page is None:
+        page = 1
+    page_data = Userlog.query.join(
+            User
+        ).filter(
+           User.id == Userlog.user_id
+        ).order_by(
+       Userlog.addtime.asc()
+    ).paginate(page=page, per_page=10)   #paginate分页 (page页码,per_page条目数)
+    return render_template("admin/userloginlog_list.html",page_data=page_data)
 
 
 #权限添加
 @admin.route("/auth/add/",methods=["GET","POST"])
 @check_login
-@admin_auth
 def auth_add():
     form = AuthForm()
     if form.validate_on_submit():
@@ -549,7 +557,6 @@ def auth_add():
 #权限列表
 @admin.route("/auth/list/<int:page>/",methods=["GET"])
 @check_login
-@admin_auth
 def auth_list(page=None):
     if page is None:
         page = 1
@@ -562,7 +569,6 @@ def auth_list(page=None):
 #删除权限
 @admin.route("/auth/del/<int:id>/",methods=["GET"])
 @check_login
-@admin_auth
 def auth_del(id=None):
     auth=Auth.query.filter_by(id=id).first_or_404()   #如果没有返回404
     db.session.delete(auth)
@@ -613,9 +619,8 @@ def role_add():
 
 
 #角色列表
-@admin.route("/role/list/<int:page>",methods=["GET"])
+@admin.route("/role/list/<int:page>/",methods=["GET"])
 @check_login
-@admin_auth
 def role_list(page=None):
     if page is None:
         page = 1
@@ -640,7 +645,6 @@ def role_del(id=None):
 #修改角色
 @admin.route("/role/update/<int:id>/",methods=["GET","POST"])
 @check_login
-@admin_auth
 def role_update(id=None):
     form = RoleForm()
     role = Role.query.get_or_404(id)
