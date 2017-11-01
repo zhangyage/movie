@@ -5,12 +5,14 @@
 '''
 from flask_wtf import FlaskForm
 from wtforms import TextField,PasswordField,validators,StringField,SubmitField,FileField,TextAreaField,SelectField,SelectMultipleField
-from wtforms.validators import DataRequired,ValidationError
+from wtforms.validators import DataRequired,ValidationError,EqualTo
 from flask_wtf.file import file_allowed
-from app.models import Admin,Tag,Auth
+from app.models import Admin,Tag,Auth,Role
+from wtforms.fields.core import SelectField
 
 tags = Tag.query.all()   #获取所有的标签
 auth_list = Auth.query.all()   #获取所有的权限
+role_list = Role.query.all()   #获取所有的角色
 
 #用户登录验证
 class LoginForm(FlaskForm):
@@ -249,3 +251,47 @@ class RoleForm(FlaskForm):
                      render_kw={"class":"btn btn-primary",
                           }
                       )  
+    
+
+#管理员表单
+class AdminForm(FlaskForm):
+    '''管理员登陆表单'''
+    name = StringField(label=u"管理员名称",
+                          validators=[DataRequired(u'请输入管理员名称')],  #设置为必填项目
+                          description=u"管理员名称",
+                          render_kw={"class":"form-control",
+                                     "placeholder":u"请输入管理员名称！"
+                              }
+                          )
+    pwd = PasswordField(label=u"密码",
+                          validators=[DataRequired(u'请输入密码')],  
+                          description=u"密码",
+                          render_kw={"class":"form-control",
+                                     "id":"input_pwd",
+                                     "placeholder":u"请输入密码！"
+                              }
+                          )
+    repwd = PasswordField(label=u"重复密码",
+                      validators=[
+                          DataRequired(u'请再次输入密码'),
+                          EqualTo('pwd',message=u"两次密码不一致！")],  
+                      description=u"确认密码",
+                      render_kw={"class":"form-control",
+                                 "id":"input_re_pwd",
+                                 "placeholder":u"请再次输入密码！"
+                          }
+                      )
+    role_id = SelectField(label=u"所属角色",
+                      validators=[DataRequired(u'请选择角色')],  
+                      description=u"所属角色",
+                      coerce = int,
+                      choices = [(v.id,v.name) for v in role_list],
+                      render_kw={"class":"form-control",
+                                 "placeholder":u"请选择角色！"
+                          }
+        )
+    submit = SubmitField(label=u"登陆",
+                         render_kw={"class":"btn btn-primary btn-block btn-flat",
+                              }
+                          )
+        
