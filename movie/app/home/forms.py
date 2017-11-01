@@ -147,17 +147,19 @@ class UserForm(FlaskForm):
                   validators=[DataRequired(u'请上传头像'),file_allowed(['jpg', 'png'], u'Images only!')],  #设置为必填项目
                   description=u"头像",
                   render_kw={"id":"input_logo",
+                             "class":"form-control glyphicon glyphicon-open btn btn-primary",
+                             "style":"margin-top:6px"
                           }
                   )
-    info = TextAreaField(label=u"电影简介",
-                      validators=[DataRequired(u'请输入电影简介')],  #设置为必填项目
-                      description=u"电影简介",
+    info = TextAreaField(label=u"个人简介",
+                      validators=[DataRequired(u'请输入个人简介')],  #设置为必填项目
+                      description=u"个人简介",
                       render_kw={"class":"form-control", 
                                  "id":"input_info",
                                  "row":10
                           }
                       )
     submit = SubmitField(label=u"保存修改",
-                         render_kw={"class":"btn btn-lg btn-success btn-block",
+                         render_kw={"class":"glyphicon glyphicon-saved btn btn-success",
                               }
                           )
