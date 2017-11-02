@@ -121,7 +121,7 @@ def pwd():
         db.session.add(admin)
         db.session.commit()
         flash(u"密码修改成功,请重新登录", "OK")
-        redirect(url_for('admin.logout'))
+        return redirect(url_for('admin.logout'))
     return render_template("admin/pwd.html",form=form)
 
 #添加标签
@@ -242,7 +242,6 @@ def movie_add():
 #电影列表
 @admin.route("/movie/list/<int:page>/",methods=["GET"])
 @check_login
-@admin_auth
 def movie_list(page = None):
     if page is None:
         page = 1

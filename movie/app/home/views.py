@@ -5,14 +5,16 @@
 '''
 from . import  home
 from flask import render_template,redirect,url_for,session,flash,request
-from app.home.forms import RegistForm,LoginForm,UserForm
-from app.models import User,Userlog
+from app.home.forms import RegistForm,LoginForm,UserForm,PwdForm
+from app.models import User,Userlog,Comment,Movie,Moviecol,Preview
 from functools import wraps
 from werkzeug.utils import secure_filename
 from app import db,app
+from app.plugins import IP_addr
 import uuid
 import os
 import datetime
+from pip._vendor.ipaddress import ip_address
 
 
 #装饰器 验证是否登录
@@ -51,6 +53,7 @@ def login():
         userlog = Userlog(                 #记录用户登录日志
             user_id=user.id,
             ip=request.remote_addr,
+            ip_addr = IP_addr.use_params_requests(request.remote_addr)
         )
         db.session.add(userlog)
         db.session.commit()
@@ -93,17 +96,25 @@ def user():
         form.name.data = user.name
         form.email.data = user.email
         form.phone.data = user.phone
+        form.info.data = user.info
     if form.validate_on_submit():
         data = form.data
         user_count = User.query.filter_by(name=data["name"]).count()
         if user_count == 1 and user.name != data["name"]:
             flash(u"用户已存在！",'err')
             return redirect(url_for('home.user'))
+        email_count = User.query.filter_by(email=data["email"]).count()
+        if email_count == 1 and user.email != data["email"]:
+            flash(u"邮箱已存在！",'err')
+            return redirect(url_for('home.user'))
+        phone_count = User.query.filter_by(phone=data["phone"]).count()
+        if phone_count == 1 and user.phone != data["phone"]:
+            flash(u"手机号码已存在！",'err')
+            return redirect(url_for('home.user'))
         if form.face.data.filename != "":
             file_face = secure_filename(form.face.data.filename)
             user.face = change_filename(file_face)
             form.face.data.save(app.config["UP_DIR"]+ "users/" + user.face)
-        
         user.name = data["name"]
         user.info = data["info"]
         user.email = data["email"]
@@ -114,29 +125,71 @@ def user():
         return redirect(url_for('home.user'))
     return render_template("home/user.html",form=form,user=user)
 
-@home.route("/pwd/")
+@home.route("/pwd/",methods=["GET","POST"])
 @check_login
 def pwd():
-    return render_template("home/pwd.html")
+    form = PwdForm()
+    if form.validate_on_submit():
+        data = form.data
+        user = User.query.filter_by(name=session["user"]).first()
+        from werkzeug.security import generate_password_hash    #导入加密模块
+        user.pwd = generate_password_hash(data["new_pwd"])
+        db.session.add(user)
+        db.session.commit()
+        flash(u"密码修改成功,请重新登录", "OK")
+        return redirect(url_for('home.logout'))
+    return render_template("home/pwd.html",form=form)
 
-@home.route("/comments/")
+@home.route("/comments/<int:page>",methods=["GET"])
 @check_login
-def comments():
-    return render_template("home/comments.html")
+def comments(page=None):
+    if page is None:
+        page = 1
+    page_data = Comment.query.join(
+        Movie
+        ).join(
+        User
+        ).filter(
+            Comment.movie_id == Movie.id,
+            User.id == session["user_id"]
+    ).order_by(
+       Comment.addtime.desc()
+    ).paginate(page=page, per_page=10)   #paginate分页 (page页码,per_page条目数)
+    return render_template("home/comments.html",page_data=page_data)
 
-@home.route("/moviecol/")
+@home.route("/moviecol/<int:page>",methods=["GET"])
 @check_login
-def moviecol():
-    return render_template("home/moviecol.html")
+def moviecol(page=None):
+    if page is None:
+        page = 1
+    page_data = Moviecol.query.join(
+        Movie
+        ).join(
+        User
+        ).filter(
+            Moviecol.movie_id == Movie.id,
+            User.id == session["user_id"]
+    ).order_by(
+       Moviecol.addtime.desc()
+    ).paginate(page=page, per_page=10)   #paginate分页 (page页码,per_page条目数)
+    return render_template("home/moviecol.html",page_data=page_data)
 
-@home.route("/loginlog/")
+@home.route("/loginlog/<int:page>/",methods=["GET"])
 @check_login
-def loginlog():
-    return render_template("home/loginlog.html")
+def loginlog(page=None):
+    if page is None:
+        page = 1
+    page_data = Userlog.query.filter_by( 
+        user_id = int(session["user_id"])
+    ).order_by(
+       Userlog.addtime.desc()
+    ).paginate(page=page, per_page=10)   #paginate分页 (page页码,per_page条目数)
+    return render_template("home/loginlog.html",page_data=page_data)
 
 @home.route("/animation/")
 def animation():
-    return render_template("home/animation.html")
+    data = Preview.query.all()
+    return render_template("home/animation.html",data=data)
 
 
 @home.route("/search/")
