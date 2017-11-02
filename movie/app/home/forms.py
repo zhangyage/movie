@@ -146,9 +146,10 @@ class UserForm(FlaskForm):
     face = FileField(label=u"头像",
                   validators=[DataRequired(u'请上传头像'),file_allowed(['jpg', 'png'], u'Images only!')],  #设置为必填项目
                   description=u"头像",
-                  render_kw={"id":"input_logo",
-                             "class":"form-control glyphicon glyphicon-open btn btn-primary",
-                             "style":"margin-top:6px"
+                  render_kw={"id":"input_face",
+                             "class":"form-control",
+                             #"name":"face",
+                             #"type":"hidden"
                           }
                   )
     info = TextAreaField(label=u"个人简介",
@@ -156,10 +157,42 @@ class UserForm(FlaskForm):
                       description=u"个人简介",
                       render_kw={"class":"form-control", 
                                  "id":"input_info",
-                                 "row":10
+                                 "style":"height:100px;",
+                                 "row":30
                           }
                       )
     submit = SubmitField(label=u"保存修改",
-                         render_kw={"class":"glyphicon glyphicon-saved btn btn-success",
+                         render_kw={"class":" btn btn-success",
                               }
                           )
+
+#修改密码
+class PwdForm(FlaskForm):  
+    '''密码修改表单'''   
+    old_pwd = PasswordField(label=u"旧密码",
+                  validators=[DataRequired(u'请输入旧密码')],  #设置为必填项目
+                  description=u"旧密码",
+                  render_kw={"class":"form-control", 
+                             "id":"input_pwd",
+                             "placeholder":u"请输入旧密码！",
+                          }
+                )
+    new_pwd = PasswordField(label=u"新密码",
+                  validators=[DataRequired(u'请输入新密码')],  #设置为必填项目
+                  description=u"新密码",
+                  render_kw={"class":"form-control", 
+                             "id":"input_newpwd",
+                             "placeholder":u"请输入新密码！",
+                          }
+                )
+    submit = SubmitField(label=u"修改",
+                 render_kw={"class":"btn btn-primary",
+                      }
+                  ) 
+    def validate_old_pwd(self,field):
+        from flask import  session
+        pwd = field.data
+        name = session["user"]
+        user = User.query.filter_by(name=name).first()
+        if not user.check_pwd(pwd):
+            raise ValidationError(u"旧密码错误！")
