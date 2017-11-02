@@ -51,6 +51,7 @@ class Userlog(db.Model):
     id = db.Column(db.Integer, primary_key=True)  # 编号
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # 所属会员
     ip = db.Column(db.String(100))  # 登录IP
+    ip_addr = db.Column(db.String(100))  # 登录IP地址运营商
     addtime = db.Column(db.DateTime, index=True, default=datetime.now)  # 登录时间
 
     def __repr__(self):
