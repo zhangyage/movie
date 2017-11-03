@@ -7,5 +7,6 @@ encoding//app/home/__init__.py=utf-8
 encoding//app/home/forms.py=utf-8
 encoding//app/home/views.py=utf-8
 encoding//app/models.py=utf-8
+encoding//app/plugins/IP_addr.py=utf-8
 encoding/manager.py=utf-8
 encoding/test.py=utf-8
