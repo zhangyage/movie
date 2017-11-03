@@ -78,7 +78,7 @@ class MovieForm(FlaskForm):
                               }
                           )
     url = FileField(label=u"文件",
-                      validators=[DataRequired(u'请上传文件'),file_allowed(['jpg', 'png'], u'Images only!')],  #设置为必填项目
+                      validators=[DataRequired(u'请上传文件')],  #设置为必填项目
                       description=u"电影文件",
                       render_kw={"id":"input_url", 
                               }
@@ -92,7 +92,7 @@ class MovieForm(FlaskForm):
                           }
                       )
     logo = FileField(label=u"电影封面",
-                  validators=[DataRequired(u'请上传封面')],  #设置为必填项目
+                  validators=[DataRequired(u'请上传封面'),file_allowed(['jpg', 'png'], u'Images only!')],  #设置为必填项目
                   description=u"电影封面",
                   render_kw={"id":"input_logo",
                           }
