@@ -196,3 +196,21 @@ class PwdForm(FlaskForm):
         user = User.query.filter_by(name=name).first()
         if not user.check_pwd(pwd):
             raise ValidationError(u"旧密码错误！")
+        
+class CommentForm(FlaskForm):
+    '''提交评论'''
+    content = TextAreaField(
+        label=u"内容", 
+        validators=[DataRequired("请输入内容：")],  
+        description=u"内容", 
+        render_kw={
+            "id":"input_content",
+            }
+        ) 
+    
+    submit = SubmitField(label=u"提交评论",
+                 render_kw={
+                     "class":"btn btn-primary glyphicon glyphicon-edit",
+                     "id":"btn-sub"
+                      }
+                  ) 
