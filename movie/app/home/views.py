@@ -5,7 +5,7 @@
 '''
 from . import  home
 from flask import render_template,redirect,url_for,session,flash,request
-from app.home.forms import RegistForm,LoginForm,UserForm,PwdForm
+from app.home.forms import RegistForm,LoginForm,UserForm,PwdForm,CommentForm
 from app.models import User,Userlog,Comment,Movie,Moviecol,Preview,Tag
 from functools import wraps
 from werkzeug.utils import secure_filename
@@ -109,6 +109,7 @@ def logout():
     session.pop("user_id",None)
     return redirect(url_for("home.login"))
 
+#用户注册
 @home.route("/register/",methods=["GET","POST"])
 def register():
     form = RegistForm()
@@ -183,6 +184,8 @@ def pwd():
         return redirect(url_for('home.logout'))
     return render_template("home/pwd.html",form=form)
 
+
+#评论
 @home.route("/comments/<int:page>",methods=["GET"])
 @check_login
 def comments(page=None):
@@ -200,6 +203,31 @@ def comments(page=None):
     ).paginate(page=page, per_page=10)   #paginate分页 (page页码,per_page条目数)
     return render_template("home/comments.html",page_data=page_data)
 
+#电影收藏添加
+@home.route("/moviecol/add/",methods=["GET"])
+@check_login
+def moviecol_add():
+    uid = request.args.get("uid","")
+    mid = request.args.get("mid","")
+    moviecol=Moviecol.query.filter_by(
+        user_id=int(uid),
+        movie_id=int(mid)
+    ).count()
+    if moviecol == 1:
+        data = dick(ok=0)
+    
+    if moviecol == 0:
+        moviecol = Moviecol(
+            user_id=int(uid),
+            movie_id=int(mid)
+        )
+        db.session.add(moviecol)
+        db.session.commit()
+        data = dick(ok=1)
+    import json
+    return json.dumps(data)
+
+#收藏电影
 @home.route("/moviecol/<int:page>",methods=["GET"])
 @check_login
 def moviecol(page=None):
@@ -243,7 +271,8 @@ def search(page=None):
     key = request.args.get("key","")
     movie_count = Movie.query.filter(
         Movie.title.ilike('%' +key+ '%')
-    ).count() 
+    ).count()                              #获取搜索的条目数量
+    
     page_data = Movie.query.filter(
         Movie.title.ilike('%' +key+ '%')
     ).order_by(
@@ -251,14 +280,134 @@ def search(page=None):
     ).paginate(page=page,per_page=6)
     return render_template("home/search.html",key=key,page_data=page_data,movie_count=movie_count)
 
-@home.route("/play/<int:id>",methods=["GET"])
-def play(id=None):
+@home.route("/play/<int:id>/<int:page>/",methods=["GET","POST"])
+def play(id=None,page=None):
     movie = Movie.query.join(
         Tag
     ).filter(
         Movie.tag_id == Tag.id,
         Movie.id == int(id)
-    ).first()
-    return render_template("home/play.html",movie=movie)
+    ).first()                        #播放电影信息
+    
+    if page is None:
+        page = 1
+    page_data = Comment.query.join(
+        Movie
+    ).join(
+        User
+    ).filter(
+        Movie.id == movie.id,
+        User.id == Comment.user_id
+    ).order_by(
+        Comment.addtime.desc()
+    ).paginate(page=page,per_page=6)    #分页内容
+    
+    movie.playnum = movie.playnum + 1   #播放次数添加
+    form = CommentForm()
+    if form.validate_on_submit():
+        data = form.data
+        comment = Comment(
+            content = data["content"],
+            movie_id = movie.id,
+            user_id = session["user_id"]
+        )
+        db.session.add(comment)
+        db.session.commit()
+        movie.commentnum = movie.commentnum + 1   #评论次数添加
+        db.session.add(movie)
+        db.session.commit()
+        flash(u"评论添加成功！","OK")
+        return redirect(url_for('home.play', id=movie.id, page=1))
+    db.session.add(movie)
+    db.session.commit()
+    
+    return render_template("home/play.html",movie=movie,page_data=page_data,form=form)
 
 
+
+@home.route("/video/<int:id>/<int:page>/", methods=["GET", "POST"])
+def video(id=None, page=None):
+    movie = Movie.query.join(Tag).filter(
+        Tag.id == Movie.tag_id,
+        Movie.id == int(id)
+    ).first_or_404()
+
+    if page is None:
+        page = 1
+    page_data = Comment.query.join(
+        Movie
+    ).join(
+        User
+    ).filter(
+        Movie.id == movie.id,
+        User.id == Comment.user_id
+    ).order_by(
+        Comment.addtime.desc()
+    ).paginate(page=page, per_page=10)
+
+    movie.playnum = movie.playnum + 1
+    form = CommentForm()
+    if "user" in session and form.validate_on_submit():
+        data = form.data
+        comment = Comment(
+            content=data["content"],
+            movie_id=movie.id,
+            user_id=session["user_id"]
+        )
+        db.session.add(comment)
+        db.session.commit()
+        movie.commentnum = movie.commentnum + 1
+        db.session.add(movie)
+        db.session.commit()
+        flash("添加评论成功！", "ok")
+        return redirect(url_for('home.video', id=movie.id, page=1))
+    db.session.add(movie)
+    db.session.commit()
+    return render_template("home/video.html", movie=movie, form=form, page_data=page_data)
+
+
+
+
+
+@home.route("/tm/", methods=["GET", "POST"])
+def tm():
+    import json
+    if request.method == "GET":
+        #获取弹幕消息队列
+        id = request.args.get('id')
+        key = "movie" + str(id)
+        if rd.llen(key):
+            msgs = rd.lrange(key, 0, 2999)
+            res = {
+                "code": 1,
+                "danmaku": [json.loads(v) for v in msgs]
+            }
+        else:
+            res = {
+                "code": 1,
+                "danmaku": []
+            }
+        resp = json.dumps(res)
+    if request.method == "POST":
+        #添加弹幕
+        data = json.loads(request.get_data())
+        msg = {
+            "__v": 0,
+            "author": data["author"],
+            "time": data["time"],
+            "text": data["text"],
+            "color": data["color"],
+            "type": data['type'],
+            "ip": request.remote_addr,
+            "_id": datetime.datetime.now().strftime("%Y%m%d%H%M%S") + uuid.uuid4().hex,
+            "player": [
+                data["player"]
+            ]
+        }
+        res = {
+            "code": 1,
+            "data": msg
+        }
+        resp = json.dumps(res)
+        rd.lpush("movie" + str(data["player"]), json.dumps(msg))
+    return Response(resp, mimetype='application/json')
