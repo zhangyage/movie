@@ -20,6 +20,7 @@ db = SQLAlchemy(app)
 """
 from datetime import datetime
 from app import db
+from werkzeug.security import generate_password_hash,check_password_hash
 
 # 会员
 class User(db.Model):
